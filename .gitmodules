@@ -1,0 +1,6 @@
+[submodule "dependencies/debugbreak"]
+	path = dependencies/debugbreak
+	url = https://github.com/scottt/debugbreak.git
+[submodule "dependencies/gsl"]
+	path = dependencies/gsl
+	url = https://github.com/microsoft/GSL.git

@@ -1,0 +1,13 @@
+
+FILE(GLOB SRCS *.cpp)
+FILE(GLOB HDRS *.h)
+
+SOURCE_GROUP("" FILES ${SRCS} ${HDRS})
+
+ADD_LIBRARY(common
+  ${SRCS}
+  ${HDRS}
+)
+
+TARGET_LINK_LIBRARIES(common
+)
