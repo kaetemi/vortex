@@ -33,6 +33,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "platform.h"
 
+#include <mutex>
+
 namespace pv {
 
 // Core platform behaviour
@@ -70,9 +72,16 @@ public:
 #endif
 	}
 
+	void print(std::string_view str);
+	void printLf(std::string_view str);
+
+	void print(const char *str);
+	void printLf(const char *str);
+
 private:
 	int m_ArgC;
 	char **m_ArgV;
+	std::mutex m_PrintMutex;
 
 #ifdef _WIN32
 	HINSTANCE m_ExecutableModule;

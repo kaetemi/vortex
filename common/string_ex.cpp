@@ -31,7 +31,42 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace pv {
 
-void stringEx() {}
+#ifdef _WIN32
+
+std::wstring winCpToWide(const char *str, size_t len, UINT cp)
+{
+	if (!len)
+		len = strlen(str);
+	if (!len)
+		return std::wstring();
+
+	// Convert from codepage to wide
+	wchar_t *tmp = (wchar_t *)_malloca((len + 1) * 4);
+	if (!tmp)
+		throw std::bad_alloc();
+	PV_FINALLY([&] { _freea(tmp); });
+	int tmpLen = MultiByteToWideChar(cp, 0,
+		str, (int)(len + 1), /* include null-termination */
+		tmp, (int)((len + 1) * 2));
+	if (tmpLen <= 1)
+		return std::wstring();
+
+	std::wstring res(tmp, (size_t)tmpLen - 1);
+	return res;
+}
+
+// Convert UTF-8 to wide character set
+std::wstring utf8ToWide(const char *str, size_t len)
+{
+	return winCpToWide(str, len, CP_UTF8);
+}
+
+std::wstring utf8ToWide(const std::string &str)
+{
+	return utf8ToWide(str.c_str(), str.size());
+}
+
+#endif
 
 } /* namespace pv */
 

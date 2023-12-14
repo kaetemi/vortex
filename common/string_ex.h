@@ -38,6 +38,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace pv {
 
+#ifdef _WIN32
+
+// Convert UTF-8 to wide character set
+std::wstring utf8ToWide(const char *str, size_t len = 0);
+std::wstring utf8ToWide(const std::string &str);
+
+#endif
+
 // Fast string to bool, reliably defined for strings starting with 0, 1, t, T, f, F, y, Y, n, N, and empty strings, anything else is undefined.
 inline bool toBool(const char *str) { return str[0] == '1' || (str[0] & 0xD2) == 0x50; }
 inline bool toBool(const std::string &str) { return toBool(str.c_str()); } // Safe because first byte may be null

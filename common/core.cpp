@@ -28,10 +28,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "core.h"
+
+// STL
+#include <iostream>
+
+// Win32
+#ifdef _WIN32
+#include <shellapi.h>
+#endif
+
+// Project
 #include "win32_exception.h"
 #include "string_ex.h"
-
-#include <shellapi.h>
 
 namespace pv {
 
@@ -153,6 +161,85 @@ Core::~Core()
 	DestroyIcon(m_ExecutableIcon);
 	delete[] (char *)m_ArgV;
 #endif
+}
+
+void Core::print(std::string_view str)
+{
+	if (!str.length())
+		return;
+	std::unique_lock<std::mutex> lock(m_PrintMutex);
+	if (isUtf8Clean())
+	{
+		std::cout << str;
+	}
+	else
+	{
+		// Convert from UTF-8 to wide
+		wchar_t *tmp = (wchar_t *)_malloca((str.length() + 1) * 4);
+		if (!tmp)
+			throw std::bad_alloc();
+		PV_FINALLY([&] { _freea(tmp); });
+		int tmpLen = MultiByteToWideChar(CP_UTF8, 0,
+			str.data(), (int)str.length(),
+			tmp, (int)(str.length() * 2));
+		if (!tmpLen)
+			return;
+		tmp[tmpLen] = L'\0';
+		std::wcout << std::wstring_view(tmp, (size_t)tmpLen);
+	}
+}
+
+void Core::printLf(std::string_view str)
+{
+	if (!str.length())
+		return;
+	std::unique_lock<std::mutex> lock(m_PrintMutex);
+	if (isUtf8Clean())
+	{
+		std::cout << str << "\n";
+	}
+	else
+	{
+		// Convert from UTF-8 to wide
+		wchar_t *tmp = (wchar_t *)_malloca((str.length() + 2) * 4);
+		if (!tmp)
+			throw std::bad_alloc();
+		PV_FINALLY([&] { _freea(tmp); });
+		int tmpLen = MultiByteToWideChar(CP_UTF8, 0,
+			str.data(), (int)str.length(),
+			tmp, (int)(str.length() * 2));
+		if (!tmpLen)
+			return;
+		tmp[tmpLen] = L'\n';
+		tmp[tmpLen + 1] = L'\0';
+		std::wcout << std::wstring_view(tmp, (size_t)tmpLen + 1);
+	}
+}
+
+void Core::print(const char *str)
+{
+	std::unique_lock<std::mutex> lock(m_PrintMutex);
+	if (isUtf8Clean())
+	{
+		std::cout << str;
+	}
+	else
+	{
+		print(std::string_view(str));
+	}
+}
+
+void Core::printLf(const char *str)
+{
+	std::unique_lock<std::mutex> lock(m_PrintMutex);
+	if (isUtf8Clean())
+	{
+		std::cout << str << "\n";
+	}
+	else
+	{
+		printLf(std::string_view(str));
+	}
 }
 
 } /* namespace pv */
