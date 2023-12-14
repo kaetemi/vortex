@@ -1,6 +1,6 @@
 /*
 
-Copyright (C) 2021-2023  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
+Copyright (C) 2019-2023  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -27,62 +27,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
-#pragma once
-#ifndef PV_CORE_H
-#define PV_CORE_H
-
-#include "platform.h"
+#include "string_ex.h"
 
 namespace pv {
 
-// Core platform behaviour
-// All strings are UTF-8 encoded
-class Core
-{
-public:
-	Core(int argc, char *argv[]);
-	~Core();
-
-	// Process arguments
-	PV_FORCE_INLINE int argC() { return m_ArgC; }
-	PV_FORCE_INLINE char **argV() { return m_ArgV; }
-	PV_FORCE_INLINE char *argV(int i) { return m_ArgV[i]; }
-
-#ifdef _WIN32
-	PV_FORCE_INLINE HINSTANCE executableModule()
-	{
-		return m_ExecutableModule;
-	}
-	PV_FORCE_INLINE HICON executableIcon()
-	{
-		return m_ExecutableIcon;
-	}
-#endif
-
-	// If the system is UTF-8 clean, all 8-bit strings are UTF-8 encoded
-	// Otherwise, we must use UTF-16 APIs for system interaction instead
-	PV_FORCE_INLINE bool isUtf8Clean()
-	{
-#ifdef _WIN32
-		return m_Utf8Clean;
-#else
-		return true;
-#endif
-	}
-
-private:
-	int m_ArgC;
-	char **m_ArgV;
-
-#ifdef _WIN32
-	HINSTANCE m_ExecutableModule;
-	HICON m_ExecutableIcon;
-	bool m_Utf8Clean;
-#endif
-};
+void stringEx() {}
 
 } /* namespace pv */
-
-#endif /* #ifndef PV_CORE_H */
 
 /* end of file */

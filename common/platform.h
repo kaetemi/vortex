@@ -159,6 +159,7 @@ using namespace std::string_view_literals;
 	do {                               \
 		if (!(cond)) PV_DEBUG_BREAK(); \
 	} while (false)
+#ifdef _WIN32
 #define PV_DEBUG_OUTPUT(str)                                      \
 	do {                                                          \
 		auto s = (str);                                           \
@@ -188,6 +189,14 @@ using namespace std::string_view_literals;
 		wstr[wlen + 1] = 0;                                       \
 		OutputDebugStringW(wstr);                                 \
 	} while (false)
+#else
+#define PV_DEBUG_OUTPUT(str) \
+	do {                     \
+	} while (false)
+#define PV_DEBUG_OUTPUT_LF(str) \
+	do {                        \
+	} while (false)
+#endif
 #define PV_THROW(ex)                    \
 	do {                                \
 		auto ex_ = (ex);                \
@@ -270,7 +279,7 @@ public:
 	}
 };
 
-}
+} /* namespace pv */
 
 #ifdef PV_DEBUG
 #define PV_DEBUG_FORMAT(format, ...) ([&]() -> void { std::format_to(std::back_insert_iterator(pv::OutputDebugContainer()), format, __VA_ARGS__); })()

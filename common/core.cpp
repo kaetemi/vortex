@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "core.h"
 #include "win32_exception.h"
+#include "string_ex.h"
 
 #include <shellapi.h>
 
@@ -36,9 +37,38 @@ namespace pv {
 
 Core::Core(int argc, char *argv[])
 {
-#ifdef WIN32
+#ifdef _WIN32
+	// Check if all APIs are using UTF-8
+	// Enforce it if possible
+	bool isUtf8Clean = false;
+	UINT acp = GetACP();
+	if (acp == CP_UTF8)
+	{
+		// Update C/C++ locale
+		const wchar_t *locale = _wsetlocale(LC_ALL, L"C.UTF-8");
+		if (!locale)
+		{
+			locale = _wsetlocale(LC_ALL, L"en_US.UTF-8");
+			if (!locale) locale = _wsetlocale(LC_ALL, L".UTF-8");
+		}
+		if (locale)
+		{
+			std::wstring_view lsv = locale;
+			if (endsWith(lsv, L".UTF-8"sv)
+				|| endsWith(lsv, L".UTF8"sv)
+				|| endsWith(lsv, L".utf-8"sv)
+				|| endsWith(lsv, L".utf8"sv))
+			{
+				SetConsoleOutputCP(CP_UTF8);
+				isUtf8Clean = (GetConsoleOutputCP() == CP_UTF8);
+			}
+		}
+	}
+	m_Utf8Clean = isUtf8Clean;
+
 	// https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw
 	// Convert command line to UTF-8 argv
+	// Always use UTF-16 for command line arguments
 	LPWSTR *argvw = CommandLineToArgvW(GetCommandLineW(), &argc);
 	PV_THROW_LAST_ERROR_IF(!argvw);
 	PV_FINALLY([&]() -> void { LocalFree(argvw); });
@@ -93,7 +123,7 @@ Core::Core(int argc, char *argv[])
 	// Commit
 	m_ArgC = argc;
 	m_ArgV = argv;
-#ifdef WIN32
+#ifdef _WIN32
 	argv = null;
 	m_ExecutableIcon = executableIcon;
 	executableIcon = NULL;
@@ -102,7 +132,7 @@ Core::Core(int argc, char *argv[])
 
 Core::~Core()
 {
-#ifdef WIN32
+#ifdef _WIN32
 	DestroyIcon(m_ExecutableIcon);
 	delete[] (char *)m_ArgV;
 #endif
