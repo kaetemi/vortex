@@ -194,7 +194,13 @@ void Core::print(std::string_view str)
 void Core::printLf(std::string_view str)
 {
 	if (!str.length())
+	{
+		if (isUtf8Clean())
+			std::cout << "\n";
+		else
+			std::wcout << L"\n";
 		return;
+	}
 	std::unique_lock<std::mutex> lock(m_PrintMutex);
 	if (isUtf8Clean())
 	{
