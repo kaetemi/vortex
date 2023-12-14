@@ -48,8 +48,9 @@ Core::Core(int argc, char *argv[])
 	// Convert command line to UTF-8 argv
 	LPWSTR *argvw = CommandLineToArgvW(GetCommandLineW(), &argc);
 	PV_THROW_LAST_ERROR_IF(!argvw);
-	if (argc == 0) return;
 	PV_FINALLY([&]() -> void { LocalFree(argvw); });
+	if (argc == 0) // This should never happen, always have at least the executable as argument
+		PV_THROW(Exception("CommandLineToArgvW returned 0 arguments"sv, Literal));
 	int len = sizeof(char *) * argc;
 	for (int i = 0; i < argc; ++i)
 	{
