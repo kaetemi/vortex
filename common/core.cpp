@@ -34,14 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace pv {
 
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 26495) // C not initialized on purpose
-#endif
 Core::Core(int argc, char *argv[])
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 {
 #ifdef WIN32
 	// https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw
