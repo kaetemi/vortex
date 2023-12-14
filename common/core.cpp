@@ -174,6 +174,7 @@ void Core::print(std::string_view str)
 	}
 	else
 	{
+#ifdef _WIN32
 		// Convert from UTF-8 to wide
 		wchar_t *tmp = (wchar_t *)_malloca((str.length() + 1) * 4);
 		if (!tmp)
@@ -186,6 +187,7 @@ void Core::print(std::string_view str)
 			return;
 		tmp[tmpLen] = L'\0';
 		std::wcout << std::wstring_view(tmp, (size_t)tmpLen);
+#endif
 	}
 }
 
@@ -200,6 +202,7 @@ void Core::printLf(std::string_view str)
 	}
 	else
 	{
+#ifdef _WIN32
 		// Convert from UTF-8 to wide
 		wchar_t *tmp = (wchar_t *)_malloca((str.length() + 2) * 4);
 		if (!tmp)
@@ -213,6 +216,7 @@ void Core::printLf(std::string_view str)
 		tmp[tmpLen] = L'\n';
 		tmp[tmpLen + 1] = L'\0';
 		std::wcout << std::wstring_view(tmp, (size_t)tmpLen + 1);
+#endif
 	}
 }
 
