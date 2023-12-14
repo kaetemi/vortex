@@ -1,6 +1,6 @@
 /*
 
-Copyright (C) 2020-2023  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
+Copyright (C) 2021-2023  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -27,79 +27,50 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
-#include "exception.h"
+#pragma once
+#ifndef PV_CORE_H
+#define PV_CORE_H
+
+#include "platform.h"
 
 namespace pv {
 
-namespace /* anonymous */ {
-
-std::string_view copyString(const std::string_view str) noexcept
+// Core platform behaviour
+// All strings are UTF-8 encoded
+class Core
 {
-	if (str.empty())
-		return std::string_view();
-	char *buf = new (std::nothrow) char[str.size() + 1];
-	if (!buf)
-		return std::string_view();
-	memcpy(buf, str.data(), str.size());
-	buf[str.size()] = '\0';
-	return std::string_view(buf, str.size());
-}
+public:
+	Core(int argc, char *argv[]);
+	~Core();
 
-}
+	// Process arguments
+	PV_FORCE_INLINE int argC() { return m_ArgC; }
+	PV_FORCE_INLINE char **argV() { return m_ArgV; }
+	PV_FORCE_INLINE char *argV(int i) { return m_ArgV[i]; }
 
-Exception::Exception() noexcept
-    : m_Delete(false)
-{
-}
-
-Exception::Exception(std::string_view str) noexcept
-    : m_What(copyString(std::string_view(str.data(), strlen(str.data()))))
-    , m_Delete(true)
-{
-}
-
-Exception::Exception(std::string_view litStr, int) noexcept
-    : m_What(litStr)
-    , m_Delete(false)
-{
-}
-
-Exception::~Exception() noexcept
-{
-	if (m_Delete)
-		delete[] m_What.Data;
-}
-
-Exception::Exception(const Exception &other) noexcept
-{
-	if (other.m_Delete)
+#ifdef WIN32
+	PV_FORCE_INLINE HINSTANCE executableModule()
 	{
-		m_What = copyString(other.m_What.sv());
-		m_Delete = true;
+		return m_ExecutableModule;
 	}
-	else
+	PV_FORCE_INLINE HICON executableIcon()
 	{
-		m_What.Data = other.m_What.Data;
-		m_What.Size = other.m_What.Size;
-		m_Delete = false;
+		return m_ExecutableIcon;
 	}
-}
+#endif
 
-Exception &Exception::operator=(Exception const &other) noexcept
-{
-	if (this != &other)
-	{
-		this->~Exception();
-		new (this) Exception(other);
-	}
-	return *this;
-}
+private:
+	int m_ArgC;
+	char **m_ArgV;
 
-[[nodiscard]] std::string_view Exception::what() const
-{
-	return m_What.Data ? m_What.sv() : "An unknown exception occurred."sv;
-}
+#ifdef WIN32
+	HINSTANCE m_ExecutableModule;
+	HICON m_ExecutableIcon;
+#endif
+};
 
 } /* namespace pv */
+
+#endif /* #ifndef PV_CORE_H */
 
 /* end of file */

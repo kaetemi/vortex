@@ -110,6 +110,7 @@ using namespace std::string_view_literals;
 
 // The usual
 #include <functional>
+#include <format>
 
 #endif /* __cplusplus */
 
@@ -158,6 +159,42 @@ using namespace std::string_view_literals;
 	do {                               \
 		if (!(cond)) PV_DEBUG_BREAK(); \
 	} while (false)
+#define PV_DEBUG_OUTPUT(str)                                      \
+	do {                                                          \
+		auto s = (str);                                           \
+		std::string_view sv = s;                                  \
+		wchar_t *wstr = (wchar_t *)_malloca((sv.size() + 2) * 2); \
+		if (!wstr) break;                                         \
+		PV_FINALLY([&]() -> void { _freea(wstr); });              \
+		int wlen = MultiByteToWideChar(CP_UTF8, 0,                \
+		    &sv[0], (int)sv.size(),                               \
+		    wstr, (int)sv.size() * 2);                            \
+		if (!wlen) break;                                         \
+		wstr[wlen] = 0;                                           \
+		OutputDebugStringW(wstr);                                 \
+	} while (false)
+#define PV_DEBUG_OUTPUT_LF(str)                                   \
+	do {                                                          \
+		auto s = (str);                                           \
+		std::string_view sv = s;                                  \
+		wchar_t *wstr = (wchar_t *)_malloca((sv.size() + 2) * 2); \
+		if (!wstr) break;                                         \
+		PV_FINALLY([&]() -> void { _freea(wstr); });              \
+		int wlen = MultiByteToWideChar(CP_UTF8, 0,                \
+		    &sv[0], (int)sv.size(),                               \
+		    wstr, (int)sv.size() * 2);                            \
+		if (!wlen) break;                                         \
+		wstr[wlen] = '\n';                                        \
+		wstr[wlen + 1] = 0;                                       \
+		OutputDebugStringW(wstr);                                 \
+	} while (false)
+#define PV_THROW(ex)                    \
+	do {                                \
+		auto ex_ = (ex);                \
+		PV_DEBUG_OUTPUT_LF(ex_.what()); \
+		debug_break();                  \
+		throw ex_;                      \
+	} while (false)
 #else
 #define PV_DEBUG_BREAK() \
 	do {                 \
@@ -180,6 +217,79 @@ using namespace std::string_view_literals;
 		throw ex;    \
 	} while (false)
 #endif
+
+#define PV_OUTPUT_DEBUG_BUFFER (_ALLOCA_S_THRESHOLD / 4)
+
+namespace pv {
+
+struct OutputDebugContainer
+{
+public:
+	typedef char value_type;
+
+private:
+	char m_Buffer[PV_OUTPUT_DEBUG_BUFFER];
+	int m_Length = 0;
+
+	void flush()
+	{
+		int len = m_Length;
+		if (m_Buffer[len - 1] & 0x80)
+		{
+			// Last character may be incomplete
+			--len;
+			while (m_Buffer[len] & 0x40)
+				--len;
+		}
+		PV_DEBUG_OUTPUT(std::string_view(m_Buffer, len));
+		int remain = m_Length - len;
+		for (int i = 0; i < remain; ++i)
+			m_Buffer[i] = m_Buffer[len + i];
+		m_Length = remain;
+	}
+
+public:
+	PV_FORCE_INLINE void push_back(char c)
+	{
+		m_Buffer[m_Length] = c;
+		++m_Length;
+		if (m_Length >= sizeof(m_Buffer))
+			flush();
+	}
+
+#pragma warning(push)
+#pragma warning(disable : 26495) // C not initialized on purpose
+	PV_FORCE_INLINE OutputDebugContainer()
+	{
+	}
+#pragma warning(pop)
+	PV_FORCE_INLINE ~OutputDebugContainer()
+	{
+		if (m_Length)
+			PV_DEBUG_OUTPUT(std::string_view(m_Buffer, m_Length));
+	}
+};
+
+}
+
+#ifdef PV_DEBUG
+#define PV_DEBUG_FORMAT(format, ...) ([&]() -> void { std::format_to(std::back_insert_iterator(pv::OutputDebugContainer()), format, __VA_ARGS__); })()
+#else
+#define PV_DEBUG_FORMAT(format, ...) \
+	do {                             \
+	} while (false)
+#endif
+
+#define PV_SAFE_C_DELETE(del, ptr) \
+	if (ptr)                       \
+	{                              \
+		del(ptr);                  \
+		ptr = NULL;                \
+	}
+
+#define PV_SAFE_DELETE(ptr) \
+	delete ptr;             \
+	ptr = null;
 
 #endif /* PV_PLATFORM_H */
 

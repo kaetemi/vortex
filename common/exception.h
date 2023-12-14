@@ -1,6 +1,6 @@
 /*
 
-Copyright (C) 2023  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
+Copyright (C) 2020-2023  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
