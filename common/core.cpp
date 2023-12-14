@@ -35,6 +35,27 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace pv {
 
+namespace /* anonymous */ {
+
+#ifdef _WIN32
+
+bool isUtf8Locale(const wchar_t *locale)
+{
+	if (!locale)
+		return false;
+	std::wstring_view lsv = locale;
+	if (endsWith(lsv, L".UTF-8"sv)
+		|| endsWith(lsv, L".UTF8"sv)
+		|| endsWith(lsv, L".utf-8"sv)
+		|| endsWith(lsv, L".utf8"sv))
+		return true;
+	return false;
+}
+
+#endif
+
+} /* anonymous namespace */
+
 Core::Core(int argc, char *argv[])
 {
 #ifdef _WIN32
@@ -46,22 +67,15 @@ Core::Core(int argc, char *argv[])
 	{
 		// Update C/C++ locale
 		const wchar_t *locale = _wsetlocale(LC_ALL, L"C.UTF-8");
-		if (!locale)
+		if (!isUtf8Locale(locale))
 		{
 			locale = _wsetlocale(LC_ALL, L"en_US.UTF-8");
-			if (!locale) locale = _wsetlocale(LC_ALL, L".UTF-8");
+			if (!isUtf8Locale(locale)) locale = _wsetlocale(LC_ALL, L".UTF-8");
 		}
-		if (locale)
+		if (isUtf8Locale(locale))
 		{
-			std::wstring_view lsv = locale;
-			if (endsWith(lsv, L".UTF-8"sv)
-				|| endsWith(lsv, L".UTF8"sv)
-				|| endsWith(lsv, L".utf-8"sv)
-				|| endsWith(lsv, L".utf8"sv))
-			{
-				SetConsoleOutputCP(CP_UTF8);
-				isUtf8Clean = (GetConsoleOutputCP() == CP_UTF8);
-			}
+			SetConsoleOutputCP(CP_UTF8);
+			isUtf8Clean = (GetConsoleOutputCP() == CP_UTF8);
 		}
 	}
 	m_Utf8Clean = isUtf8Clean;
