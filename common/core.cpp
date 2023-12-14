@@ -66,6 +66,7 @@ Core::Core(int argc, char *argv[])
 	if (acp == CP_UTF8)
 	{
 		// Update C/C++ locale
+		const wchar_t *bkp = _wsetlocale(LC_ALL, null);
 		const wchar_t *locale = _wsetlocale(LC_ALL, L"C.UTF-8");
 		if (!isUtf8Locale(locale))
 		{
@@ -77,6 +78,8 @@ Core::Core(int argc, char *argv[])
 			SetConsoleOutputCP(CP_UTF8);
 			isUtf8Clean = (GetConsoleOutputCP() == CP_UTF8);
 		}
+		if (!isUtf8Clean) // Attempt to revert changes on failure
+			_wsetlocale(LC_ALL, bkp);
 	}
 	m_Utf8Clean = isUtf8Clean;
 
