@@ -72,7 +72,7 @@ Core::Core(int argc, char *argv[])
 			locale = _wsetlocale(LC_ALL, L"en_US.UTF-8");
 			if (!isUtf8Locale(locale)) locale = _wsetlocale(LC_ALL, L".UTF-8");
 		}
-		if (isUtf8Locale(locale))
+		if (isUtf8Locale(locale) || isUtf8Locale(_wsetlocale(LC_ALL, null)))
 		{
 			SetConsoleOutputCP(CP_UTF8);
 			isUtf8Clean = (GetConsoleOutputCP() == CP_UTF8);
