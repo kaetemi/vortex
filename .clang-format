@@ -1,12 +1,18 @@
 ---
 BasedOnStyle: WebKit
+AllowShortBlocksOnASingleLine: Always
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortEnumsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: All
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AllowShortLambdasOnASingleLine: All
+AllowShortLoopsOnASingleLine: true
 BraceWrapping:
   AfterClass:      true
   AfterControlStatement: true
   AfterEnum:       true
   AfterFunction:   true
-  AfterNamespace:  true
+  AfterNamespace:  false
   AfterObjCDeclaration: true
   AfterStruct:     true
   AfterUnion:      true
@@ -20,5 +26,6 @@ PointerAlignment: Right
 SortIncludes: 'false'
 TabWidth: '4'
 UseTab: ForIndentation
+ReflowComments: false
 
 ...

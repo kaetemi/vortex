@@ -81,8 +81,10 @@ static_assert(false, "C++20 is required");
 #endif
 
 // Define null, with color highlight
+#ifndef null
 constexpr decltype(nullptr) null = nullptr;
 #define null null
+#endif
 
 // Include STL string and allow string literals.
 // Always use sv suffix when declaring string literals.
@@ -113,11 +115,11 @@ using namespace std::string_view_literals;
 
 // Force inline
 #ifdef _MSC_VER
-#	define PV_FORCE_INLINE __forceinline
+#define PV_FORCE_INLINE __forceinline
 #elif defined(__GNUC__) || defined(__clang__)
-#	define PV_FORCE_INLINE inline __attribute__((always_inline))
+#define PV_FORCE_INLINE inline __attribute__((always_inline))
 #else
-#	define PV_FORCE_INLINE inline
+#define PV_FORCE_INLINE inline
 #endif
 
 #if defined(_DEBUG) && !defined(NDEBUG)
@@ -126,18 +128,57 @@ using namespace std::string_view_literals;
 #define PV_RELEASE
 #endif
 
+#define PV_STR(a) PV_STR_IMPL(a)
+#define PV_STR_IMPL(a) #a
+
+#define PV_CONCAT_IMPL(a, b) a##b
+#define PV_CONCAT(a, b) PV_CONCAT_IMPL(a, b)
+
+#define PV_FINALLY(f) auto PV_CONCAT(finally__, __COUNTER__) = gsl::finally(f)
+
 // Include debug_break
 #include <debugbreak.h>
 #define PV_RELEASE_BREAK() debug_break()
+#define PV_RELEASE_ASSERT(cond)          \
+	do {                                 \
+		if (!(cond)) PV_RELEASE_BREAK(); \
+	} while (false)
+#define PV_RELEASE_VERIFY(cond)          \
+	do {                                 \
+		if (!(cond)) PV_RELEASE_BREAK(); \
+	} while (false)
 
 #ifdef PV_DEBUG
 #define PV_DEBUG_BREAK() debug_break()
-#define PV_ASSERT(cond) do { if (!(cond)) PV_DEBUG_BREAK(); } while (false)
-#define PV_VERIFY(cond) do { if (!(cond)) PV_DEBUG_BREAK(); } while (false)
+#define PV_DEBUG_ASSERT(cond)          \
+	do {                               \
+		if (!(cond)) PV_DEBUG_BREAK(); \
+	} while (false)
+#define PV_DEBUG_VERIFY(cond)          \
+	do {                               \
+		if (!(cond)) PV_DEBUG_BREAK(); \
+	} while (false)
 #else
-#define PV_DEBUG_BREAK() do { } while (false)
-#define PV_ASSERT(cond) do { } while (false)
-#define PV_VERIFY(cond) do { cond; } while (false)
+#define PV_DEBUG_BREAK() \
+	do {                 \
+	} while (false)
+#define PV_DEBUG_ASSERT(cond) \
+	do {                      \
+	} while (false)
+#define PV_DEBUG_VERIFY(cond) \
+	do {                      \
+		cond;                 \
+	} while (false)
+#define PV_DEBUG_OUTPUT(str) \
+	do {                     \
+	} while (false)
+#define PV_DEBUG_OUTPUT_LF(str) \
+	do {                        \
+	} while (false)
+#define PV_THROW(ex) \
+	do {             \
+		throw ex;    \
+	} while (false)
 #endif
 
 #endif /* PV_PLATFORM_H */
