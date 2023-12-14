@@ -228,9 +228,9 @@ void Core::printLf(std::string_view str)
 
 void Core::print(const char *str)
 {
-	std::unique_lock<std::mutex> lock(m_PrintMutex);
 	if (isUtf8Clean())
 	{
+		std::unique_lock<std::mutex> lock(m_PrintMutex);
 		std::cout << str;
 	}
 	else
@@ -241,9 +241,9 @@ void Core::print(const char *str)
 
 void Core::printLf(const char *str)
 {
-	std::unique_lock<std::mutex> lock(m_PrintMutex);
 	if (isUtf8Clean())
 	{
+		std::unique_lock<std::mutex> lock(m_PrintMutex);
 		std::cout << str << "\n";
 	}
 	else
