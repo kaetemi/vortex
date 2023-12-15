@@ -62,6 +62,19 @@ bool isUtf8Locale(const wchar_t *locale)
 	return false;
 }
 
+UINT getCpFromLcid(LCID lcid)
+{
+	UINT cp;
+	int sizeInChars = sizeof(cp) / sizeof(wchar_t);
+	if (GetLocaleInfoW(lcid,
+		LOCALE_IDEFAULTANSICODEPAGE | LOCALE_RETURN_NUMBER,
+		reinterpret_cast<LPWSTR>(&cp),
+		sizeInChars) != sizeInChars) {
+		return CP_ACP;
+	}
+	return cp;
+}
+
 #endif
 
 } /* anonymous namespace */
@@ -103,6 +116,13 @@ Core::Core(int argc, char *argv[])
 		(void)_setmode(_fileno(stdout), _O_U8TEXT);
 	}
 	m_Utf8Clean = isUtf8Clean;
+
+	// This allows us to get the legacy codepage used by non-Unicode applications
+	LCID lcid = GetSystemDefaultLCID();
+	UINT cpLegacy = getCpFromLcid(lcid);
+	if (cpLegacy == CP_ACP)
+		cpLegacy = acp;
+	m_CpLegacy = cpLegacy;
 
 	// https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw
 	// Convert command line to UTF-8 argv

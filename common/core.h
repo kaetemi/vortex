@@ -51,6 +51,10 @@ public:
 	PV_FORCE_INLINE char *argV(int i) { return m_ArgV[i]; }
 
 #ifdef _WIN32
+	PV_FORCE_INLINE int cpLegacy() // Legacy codepage
+	{
+		return m_CpLegacy;
+	}
 	PV_FORCE_INLINE HINSTANCE executableModule()
 	{
 		return m_ExecutableModule;
@@ -97,6 +101,7 @@ private:
 	HINSTANCE m_ExecutableModule;
 	HICON m_ExecutableIcon;
 	bool m_Utf8Clean;
+	int m_CpLegacy;
 #endif
 };
 

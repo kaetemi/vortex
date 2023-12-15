@@ -69,6 +69,7 @@ int main(int argc, char **argv)
 	std::wstring newLocale = newLocaleP ? newLocaleP : L"<null>";
 	UINT newConsoleOutputCP = GetConsoleOutputCP();
 	UINT newConsoleCP = GetConsoleCP();
+	UINT cpLegacy = core.cpLegacy();
 
 	core.printF("origACP: {}\n"sv, origACP);
 	core.printF("origLocale: {}\n"sv, pv::wideToUtf8(origLocale));
@@ -81,6 +82,7 @@ int main(int argc, char **argv)
 	core.printF("newLocale: {}\n"sv, pv::wideToUtf8(newLocale));
 	core.printF("newConsoleOutputCP: {}\n"sv, newConsoleOutputCP);
 	core.printF("newConsoleCP: {}\n"sv, newConsoleCP);
+	core.printF("cpLegacy: {}\n"sv, cpLegacy);
 
 	core.printLf(""sv);
 
