@@ -6,12 +6,12 @@ IF (WIN32)
 ENDIF (WIN32)
 SOURCE_GROUP("" FILES ${SRCS} ${HDRS} ${RSRC})
 
-ADD_EXECUTABLE(capture_stdout
+ADD_EXECUTABLE(test_capture_stdout
   ${SRCS}
   ${HDRS}
   ${RSRC}
 )
 
-TARGET_LINK_LIBRARIES(capture_stdout
+TARGET_LINK_LIBRARIES(test_capture_stdout
   common
 )

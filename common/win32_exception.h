@@ -94,10 +94,10 @@ private:
 
 } /* namespace pv */
 
-#define PV_HRESULT(hr) Win32Exception((hr), 0, PV_CONCAT(__FILE__, sv), __LINE__)
-#define PV_LAST_ERROR() Win32Exception(S_OK, GetLastError(), PV_CONCAT(__FILE__, sv), __LINE__)
-#define PV_THROW_HRESULT(hr) PV_THROW(Win32Exception((hr), 0, PV_CONCAT(__FILE__, sv), __LINE__))
-#define PV_THROW_LAST_ERROR() PV_THROW(Win32Exception(S_OK, GetLastError(), PV_CONCAT(__FILE__, sv), __LINE__))
+#define PV_HRESULT(hr) pv::Win32Exception((hr), 0, PV_CONCAT(__FILE__, sv), __LINE__)
+#define PV_LAST_ERROR() pv::Win32Exception(S_OK, ::GetLastError(), PV_CONCAT(__FILE__, sv), __LINE__)
+#define PV_THROW_HRESULT(hr) PV_THROW(pv::Win32Exception((hr), 0, PV_CONCAT(__FILE__, sv), __LINE__))
+#define PV_THROW_LAST_ERROR() PV_THROW(pv::Win32Exception(S_OK, ::GetLastError(), PV_CONCAT(__FILE__, sv), __LINE__))
 #define PV_THROW_IF_HRESULT(hr) \
 	if (hr) PV_THROW_HRESULT(hr)
 #define PV_THROW_LAST_ERROR_IF(cond) \
