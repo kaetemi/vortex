@@ -304,7 +304,7 @@ public:
 } /* namespace pv */
 
 #ifdef PV_DEBUG
-#define PV_DEBUG_FORMAT(format, ...) ([&]() -> void { std::format_to(std::back_insert_iterator(pv::OutputDebugContainer()), format, __VA_ARGS__); })()
+#define PV_DEBUG_FORMAT(format, ...) ([&]() -> void { pv::OutputDebugContainer pv; std::format_to(std::back_inserter(pv), format, __VA_ARGS__); })()
 #else
 #define PV_DEBUG_FORMAT(format, ...) \
 	do {                             \

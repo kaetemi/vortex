@@ -79,21 +79,10 @@ public:
 	void printLf(const char *str);
 
 	template <typename... TArgs>
-	void printF(std::string_view format, TArgs... args)
+	void printF(const std::format_string<TArgs...> format, TArgs&&... args)
 	{
-		std::format_to(std::back_insert_iterator(pv::PrintContainer(*this)), format, args...);
-	}
-
-	template <typename... TArgs>
-	void printF(const char *format, TArgs... args)
-	{
-		std::format_to(std::back_insert_iterator(pv::PrintContainer(*this)), format, args...);
-	}
-
-	template <typename... TArgs>
-	void printF(const std::string &format, TArgs... args)
-	{
-		std::format_to(std::back_insert_iterator(pv::PrintContainer(*this)), format, args...);
+		pv::PrintContainer pc(*this);
+		std::format_to<std::back_insert_iterator<pv::PrintContainer>, TArgs...>(std::back_inserter(pc), format, args...);
 	}
 
 private:
@@ -149,8 +138,6 @@ public:
 };
 
 } /* namespace pv */
-
-#define PV_PRINT_FORMAT(core, format, ...) ([&]() -> void { std::format_to(std::back_insert_iterator(pv::PrintContainer(core)), format, __VA_ARGS__); })()
 
 #endif /* #ifndef PV_CORE_H */
 

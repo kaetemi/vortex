@@ -82,6 +82,7 @@ SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 ########################################################################
 
 ADD_SUBDIRECTORY(common)
+ADD_SUBDIRECTORY(test)
 
 # SET_PROPERTY(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT vortex)
 

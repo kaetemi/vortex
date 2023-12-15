@@ -76,7 +76,7 @@ Core::Core(int argc, char *argv[])
 	if (acp == CP_UTF8)
 	{
 		// Update C/C++ locale
-		const wchar_t *bkp = _wsetlocale(LC_ALL, null);
+		std::wstring bkp = _wsetlocale(LC_ALL, null);
 		const wchar_t *locale = _wsetlocale(LC_ALL, L"C.UTF-8");
 		if (!isUtf8Locale(locale))
 		{
@@ -85,15 +85,17 @@ Core::Core(int argc, char *argv[])
 		}
 		if (isUtf8Locale(locale) || isUtf8Locale(_wsetlocale(LC_ALL, null)))
 		{
+#if 0 // This doesn't seem right, it expects UTF-16 input when doing this!
 			int prevStdOutMode = _setmode(_fileno(stdout), _O_U8TEXT);
 			if (prevStdOutMode != -1)
+#endif
 			{
 				SetConsoleOutputCP(CP_UTF8);
 				isUtf8Clean = (GetConsoleOutputCP() == CP_UTF8);
 			}
 		}
 		if (!isUtf8Clean) // Attempt to revert changes on failure
-			_wsetlocale(LC_ALL, bkp);
+			_wsetlocale(LC_ALL, bkp.c_str());
 	}
 #if 0 // Assuming nobody else does this, so stdout will end up being local codepage
 	if (!isUtf8Clean)
@@ -175,7 +177,6 @@ Core::~Core()
 
 void Core::printImpl(std::string_view str)
 {
-	std::unique_lock<std::mutex> lock(m_PrintMutex);
 	if (isUtf8Clean())
 	{
 		std::cout << str;
@@ -203,6 +204,7 @@ void Core::print(std::string_view str)
 {
 	if (!str.length())
 		return;
+	std::unique_lock<std::mutex> lock(m_PrintMutex);
 	printImpl(str);
 }
 

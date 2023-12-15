@@ -33,6 +33,40 @@ namespace pv {
 
 #ifdef _WIN32
 
+std::string winWideToCp(const wchar_t *str, size_t len, UINT cp)
+{
+	if (!len)
+		len = wcslen(str);
+	if (!len)
+		return std::string();
+
+	// Convert from wide to codepage
+	char *tmp = (char *)_malloca((len + 1) * 4);
+	if (!tmp)
+		throw std::bad_alloc();
+	PV_FINALLY([&] { _freea(tmp); });
+	int tmpLen = WideCharToMultiByte(cp, 0,
+		str, (int)(len + 1),
+		tmp, (int)((len + 1) * 4),
+		NULL, NULL);
+	if (tmpLen <= 1)
+		return std::string();
+
+	std::string res(tmp, (size_t)tmpLen - 1);
+	return res;
+}
+
+// Convert wide codepage to UTF-8
+std::string wideToUtf8(const wchar_t *str, size_t len)
+{
+	return winWideToCp(str, len, CP_UTF8);
+}
+
+std::string wideToUtf8(const std::wstring &str)
+{
+	return wideToUtf8(str.c_str(), str.size());
+}
+
 std::wstring winCpToWide(const char *str, size_t len, UINT cp)
 {
 	if (!len)
