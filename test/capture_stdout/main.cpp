@@ -175,8 +175,10 @@ void captureConPTY(pv::Core &core, std::string_view exe)
 	siEx.StartupInfo.cb = sizeof(STARTUPINFOEXW);
 
 	// Discover the size required for the list
-	size_t bytesRequired;
+	size_t bytesRequired = 0;
 	(void)InitializeProcThreadAttributeList(NULL, 1, 0, &bytesRequired);
+	if (!bytesRequired)
+		PV_THROW_HRESULT(E_UNEXPECTED);
 
 	// Allocate memory to represent the list
 	siEx.lpAttributeList = (PPROC_THREAD_ATTRIBUTE_LIST)HeapAlloc(GetProcessHeap(), 0, bytesRequired);

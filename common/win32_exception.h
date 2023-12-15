@@ -99,7 +99,7 @@ private:
 #define PV_THROW_HRESULT(hr) PV_THROW(pv::Win32Exception((hr), 0, PV_CONCAT(__FILE__, sv), __LINE__))
 #define PV_THROW_LAST_ERROR() PV_THROW(pv::Win32Exception(S_OK, ::GetLastError(), PV_CONCAT(__FILE__, sv), __LINE__))
 #define PV_THROW_IF_HRESULT(hr) \
-	if (hr) PV_THROW_HRESULT(hr)
+	if ((hr) < 0) PV_THROW_HRESULT(hr)
 #define PV_THROW_LAST_ERROR_IF(cond) \
 	if (cond) PV_THROW_LAST_ERROR()
 
