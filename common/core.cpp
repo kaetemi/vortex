@@ -53,9 +53,9 @@ bool isUtf8Locale(const wchar_t *locale)
 		return false;
 	std::wstring_view lsv = locale;
 	if (endsWith(lsv, L".UTF-8"sv)
-		|| endsWith(lsv, L".UTF8"sv)
-		|| endsWith(lsv, L".utf-8"sv)
-		|| endsWith(lsv, L".utf8"sv))
+	    || endsWith(lsv, L".UTF8"sv)
+	    || endsWith(lsv, L".utf-8"sv)
+	    || endsWith(lsv, L".utf8"sv))
 		return true;
 	return false;
 }
@@ -179,8 +179,8 @@ void Core::printImpl(std::string_view str)
 			throw std::bad_alloc();
 		PV_FINALLY([&] { _freea(tmp); });
 		int tmpLen = MultiByteToWideChar(CP_UTF8, 0,
-			str.data(), (int)str.length(),
-			tmp, (int)(str.length() * 2));
+		    str.data(), (int)str.length(),
+		    tmp, (int)(str.length() * 2));
 		if (!tmpLen)
 			return;
 		tmp[tmpLen] = L'\0';
@@ -220,8 +220,8 @@ void Core::printLf(std::string_view str)
 			throw std::bad_alloc();
 		PV_FINALLY([&] { _freea(tmp); });
 		int tmpLen = MultiByteToWideChar(CP_UTF8, 0,
-			str.data(), (int)str.length(),
-			tmp, (int)(str.length() * 2));
+		    str.data(), (int)str.length(),
+		    tmp, (int)(str.length() * 2));
 		if (!tmpLen)
 			return;
 		tmp[tmpLen] = L'\n';

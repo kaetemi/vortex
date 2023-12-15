@@ -46,8 +46,8 @@ std::wstring winCpToWide(const char *str, size_t len, UINT cp)
 		throw std::bad_alloc();
 	PV_FINALLY([&] { _freea(tmp); });
 	int tmpLen = MultiByteToWideChar(cp, 0,
-		str, (int)(len + 1), /* include null-termination */
-		tmp, (int)((len + 1) * 2));
+	    str, (int)(len + 1), /* include null-termination */
+	    tmp, (int)((len + 1) * 2));
 	if (tmpLen <= 1)
 		return std::wstring();
 
