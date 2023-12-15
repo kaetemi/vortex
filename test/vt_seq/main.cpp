@@ -123,6 +123,9 @@ int main(int argc, char **argv)
 	// Nevermind, Terminal just calculates width per codepoint and slaps the emoji in the middle.
 	// Old command line prints the codepoints separately but the codepoints widths are mismatched
 
+	// New text rendering engine of new Terminal draws the emoji at the start of the space
+	// Potentially we could fix this by moving the cursor back after a whole emoji is printed
+
 	// Save cursor position
 	core.print("\x1b[s");
 
