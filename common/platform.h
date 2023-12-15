@@ -249,6 +249,28 @@ private:
 			--len;
 			while (!(m_Buffer[len] & 0x40))
 				--len;
+			// Check if it's complete
+			int remain = m_Length - len;
+			if (remain == 4)
+			{
+				if ((m_Buffer[len] & 0xF8) == 0xF0)
+					len += 4;
+			}
+			else if (remain == 3)
+			{
+				if ((m_Buffer[len] & 0xF0) == 0xE0)
+					len += 3;
+			}
+			else if (remain == 2)
+			{
+				if ((m_Buffer[len] & 0xE0) == 0xC0)
+					len += 2;
+			}
+			else
+			{
+				// Invalid UTF-8
+				len = m_Length;
+			}
 		}
 		PV_DEBUG_OUTPUT(std::string_view(m_Buffer, len));
 		int remain = m_Length - len;

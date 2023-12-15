@@ -122,22 +122,7 @@ private:
 	Core &m_Core;
 	std::unique_lock<std::mutex> m_Lock;
 
-	void flush()
-	{
-		int len = m_Length;
-		if (m_Buffer[len - 1] & 0x80)
-		{
-			// Last character may be incomplete
-			--len;
-			while (!(m_Buffer[len] & 0x40))
-				--len;
-		}
-		m_Core.printImpl(std::string_view(m_Buffer, len));
-		int remain = m_Length - len;
-		for (int i = 0; i < remain; ++i)
-			m_Buffer[i] = m_Buffer[len + i];
-		m_Length = remain;
-	}
+	void flush();
 
 public:
 	PV_FORCE_INLINE void push_back(char c)
