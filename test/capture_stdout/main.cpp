@@ -33,6 +33,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 int main(int argc, char **argv)
 {
 	pv::Core core(argc, argv);
+
+	// We need to implement both ConPTY and direct stdout capture support
+	// Because some tools do not set the console codepage correctly, they output garbage Unicode on the console
+	// Even though their stdout is in at least some codepage (it has to be, of course), which we can convert to UTF-8 ourselves if we know it
 }
 
 /* end of file */
