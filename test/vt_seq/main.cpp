@@ -113,7 +113,8 @@ int main(int argc, char **argv)
 	core.print("\n");
 
 	core.print("And another line 🏳️‍🌈\n"); // This flag takes multiple codepoints, but only one glyph, great // [2] [3]
-	// TODO: What if we are terrible people and push this glyph as separate print calls?
+	// What if we are terrible people and push this glyph as separate print calls?
+	// From our POV we just pretend the character after a zero width joiner is zero width itself, the effect is the same
 
 	// Save cursor position
 	core.print("\x1b[s");
