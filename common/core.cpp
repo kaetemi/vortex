@@ -100,10 +100,7 @@ Core::Core(int argc, char *argv[])
 	{
 		// _O_U8TEXT makes stdout only accept wchar_t but translates it to UTF-8
 		// Same for _O_U16TEXT, but the output on stdout read by other processes will be UTF-16
-		if (GetConsoleOutputCP() == CP_UTF8)
-			(void)_setmode(_fileno(stdout), _O_U8TEXT);
-		else
-			(void)_setmode(_fileno(stdout), _O_U16TEXT);
+		(void)_setmode(_fileno(stdout), _O_U8TEXT);
 	}
 	m_Utf8Clean = isUtf8Clean;
 
