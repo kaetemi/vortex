@@ -41,10 +41,12 @@ namespace pv {
 #ifdef _WIN32
 
 // Convert wide codepage to UTF-8
+std::string winWideToCp(const wchar_t *str, size_t len, UINT cp); // With len 0 will call strlen
 std::string wideToUtf8(const wchar_t *str, size_t len = 0);
 std::string wideToUtf8(const std::wstring &str);
 
 // Convert UTF-8 to wide character set
+std::wstring winCpToWide(const char *str, size_t len, UINT cp); // With len 0 will call strlen
 std::wstring utf8ToWide(const char *str, size_t len = 0);
 std::wstring utf8ToWide(const std::string &str);
 
