@@ -78,11 +78,11 @@ public:
 	void print(const char *str);
 	void printLf(const char *str);
 
-	template <typename... TArgs>
+	template <class... TArgs>
 	void printF(const std::format_string<TArgs...> format, TArgs&&... args)
 	{
 		pv::PrintContainer pc(*this);
-		std::format_to<std::back_insert_iterator<pv::PrintContainer>, TArgs...>(std::back_inserter(pc), format, args...);
+		std::format_to(std::back_inserter(pc), format, std::forward<TArgs>(args)...);
 	}
 
 private:

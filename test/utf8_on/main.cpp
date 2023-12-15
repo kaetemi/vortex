@@ -62,14 +62,14 @@ int main(int argc, char **argv)
 	UINT newConsoleCP = GetConsoleCP();
 
 	core.printF("origACP: {}\n"sv, origACP);
-	//core.printF("origLocale: {}\n"sv, pv::wideToUtf8(origLocale));
+	core.printF("origLocale: {}\n"sv, pv::wideToUtf8(origLocale));
 	core.printF("consoleOutputCP: {}\n"sv, consoleOutputCP);
 	core.printF("consoleCP: {}\n"sv, consoleCP);
 
 	core.printLf(""sv);
 
 	core.printF("newACP: {}\n"sv, newACP);
-	//core.printF("newLocale: {}\n"sv, pv::wideToUtf8(newLocale));
+	core.printF("newLocale: {}\n"sv, pv::wideToUtf8(newLocale));
 	core.printF("newConsoleOutputCP: {}\n"sv, newConsoleOutputCP);
 	core.printF("newConsoleCP: {}\n"sv, newConsoleCP);
 

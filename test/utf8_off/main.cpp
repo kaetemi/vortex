@@ -54,6 +54,14 @@ int main(int argc, char **argv)
 #else
 
 	pv::Core core(argc, argv);
+	
+	{
+		pv::PrintContainer pc(core);
+		std::format_to(std::back_inserter(pc), "test {}\n", "ok");
+		std::format_to(std::back_inserter(pc), "test {}\n", std::string("ok"));
+	}
+	core.printF("test {}\n", "ok");
+	core.printF("test {}\n", std::string("ok")); // compiler vomit
 
 	UINT newACP = GetACP();
 	std::wstring newLocale = _wsetlocale(LC_ALL, null);
@@ -61,14 +69,14 @@ int main(int argc, char **argv)
 	UINT newConsoleCP = GetConsoleCP();
 
 	core.printF("origACP: {}\n"sv, origACP);
-	//core.printF("origLocale: {}\n"sv, pv::wideToUtf8(origLocale));
+	core.printF("origLocale: {}\n"sv, pv::wideToUtf8(origLocale));
 	core.printF("consoleOutputCP: {}\n"sv, consoleOutputCP);
 	core.printF("consoleCP: {}\n"sv, consoleCP);
 
 	core.printLf(""sv);
 
 	core.printF("newACP: {}\n"sv, newACP);
-	//core.printF("newLocale: {}\n"sv, pv::wideToUtf8(newLocale));
+	core.printF("newLocale: {}\n"sv, pv::wideToUtf8(newLocale));
 	core.printF("newConsoleOutputCP: {}\n"sv, newConsoleOutputCP);
 	core.printF("newConsoleCP: {}\n"sv, newConsoleCP);
 
