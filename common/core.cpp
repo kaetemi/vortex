@@ -96,7 +96,7 @@ Core::Core(int argc, char *argv[])
 			_wsetlocale(LC_ALL, bkp.c_str());
 	}
 	if (!isUtf8Clean) // This ensures we can output Unicode characters to the console when UTF-8 is not available
-		(void)setmode(_fileno(stdout), _O_U16TEXT);
+		(void)_setmode(_fileno(stdout), _O_U16TEXT);
 	m_Utf8Clean = isUtf8Clean;
 
 	// https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw
