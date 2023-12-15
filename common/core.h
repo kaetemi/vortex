@@ -116,7 +116,7 @@ public:
 	typedef char value_type;
 
 private:
-	char m_Buffer[PV_OUTPUT_DEBUG_BUFFER];
+	char m_Buffer[PV_OUTPUT_CHAR_BUFFER];
 	int m_Length = 0;
 	Core &m_Core;
 	std::unique_lock<std::mutex> m_Lock;

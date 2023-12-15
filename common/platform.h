@@ -227,7 +227,7 @@ using namespace std::string_view_literals;
 	} while (false)
 #endif
 
-#define PV_OUTPUT_DEBUG_BUFFER (_ALLOCA_S_THRESHOLD / 4)
+#define PV_OUTPUT_CHAR_BUFFER (_ALLOCA_S_THRESHOLD / 4)
 
 namespace pv {
 
@@ -237,7 +237,7 @@ public:
 	typedef char value_type;
 
 private:
-	char m_Buffer[PV_OUTPUT_DEBUG_BUFFER];
+	char m_Buffer[PV_OUTPUT_CHAR_BUFFER];
 	int m_Length = 0;
 
 	void flush()
