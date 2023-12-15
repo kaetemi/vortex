@@ -32,7 +32,37 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "string_ex.h"
 #include "win32_exception.h"
 
-void captureStdout(pv::Core &core, std::string_view exe)
+#if (NTDDI_VERSION < 0x0A000006)
+
+#define PROC_THREAD_ATTRIBUTE_PSEUDOCONSOLE 0x00020016
+
+// CreatePseudoConsole Flags
+#define PSEUDOCONSOLE_INHERIT_CURSOR (0x1)
+
+typedef HRESULT(WINAPI *FCreatePseudoConsole)(_In_ COORD size, _In_ HANDLE hInput, _In_ HANDLE hOutput, _In_ DWORD dwFlags, _Out_ HPCON *phPC);
+typedef HRESULT(WINAPI *FResizePseudoConsole)(_In_ HPCON hPC, _In_ COORD size);
+typedef VOID(WINAPI *FClosePseudoConsole)(_In_ HPCON hPC);
+FCreatePseudoConsole CreatePseudoConsole;
+FResizePseudoConsole ResizePseudoConsole;
+FClosePseudoConsole ClosePseudoConsole;
+
+bool loadConPTY()
+{
+	// Load the ConPTY functions
+	HMODULE hKernel32 = GetModuleHandleW(L"kernel32.dll");
+	if (!hKernel32)
+		return false;
+	CreatePseudoConsole = (FCreatePseudoConsole)GetProcAddress(hKernel32, "CreatePseudoConsole");
+	ResizePseudoConsole = (FResizePseudoConsole)GetProcAddress(hKernel32, "ResizePseudoConsole");
+	ClosePseudoConsole = (FClosePseudoConsole)GetProcAddress(hKernel32, "ClosePseudoConsole");
+	if (!CreatePseudoConsole || !ResizePseudoConsole || !ClosePseudoConsole)
+		return false;
+	return true;
+}
+
+#endif
+
+void captureStdout(pv::Core &core, std::string_view exe) // TODO: Enable conversion option
 {
 	// Regular CreateProcess and capturing stdout and stderr
 	// Not using ConPTY
@@ -111,6 +141,96 @@ void captureStdout(pv::Core &core, std::string_view exe)
 		core.printF("exit code: unknown\n");
 }
 
+void captureConPTY(pv::Core &core, std::string_view exe)
+{
+	// Same but through the new ConPTY API and CreateProcess
+	// https://learn.microsoft.com/en-us/windows/console/creating-a-pseudoconsole-session
+	std::wstring exeW = pv::utf8ToWide(exe.data(), exe.length());
+
+	// Create pipes for input and output
+	HANDLE inputRead, outputWrite; // Child side
+	HANDLE outputRead, inputWrite; // Parent side
+	SECURITY_ATTRIBUTES sa;
+	sa.nLength = sizeof(sa);
+	sa.bInheritHandle = TRUE;
+	sa.lpSecurityDescriptor = NULL;
+	bool childSideClosed = false;
+	PV_THROW_LAST_ERROR_IF(!CreatePipe(&inputRead, &inputWrite, &sa, 0));
+	PV_FINALLY([&]() { if (!childSideClosed) CloseHandle(inputRead); CloseHandle(inputWrite); });
+	PV_THROW_LAST_ERROR_IF(!CreatePipe(&outputRead, &outputWrite, &sa, 0));
+	PV_FINALLY([&]() { CloseHandle(outputRead); if (!childSideClosed) CloseHandle(outputWrite); });
+
+	// Create pseudoconsole
+	HPCON hPC;
+	COORD size;
+	size.X = 80;
+	size.Y = 25;
+	bool pseudoconsoleClosed = false;
+	PV_THROW_IF_HRESULT(CreatePseudoConsole(size, inputRead, outputWrite, 0, &hPC));
+	PV_FINALLY([&]() { if (!pseudoconsoleClosed) ClosePseudoConsole(hPC); });
+
+	// Prepare Startup Information structure
+	STARTUPINFOEXW siEx;
+	ZeroMemory(&siEx, sizeof(siEx));
+	siEx.StartupInfo.cb = sizeof(STARTUPINFOEXW);
+
+	// Discover the size required for the list
+	size_t bytesRequired;
+	(void)InitializeProcThreadAttributeList(NULL, 1, 0, &bytesRequired);
+
+	// Allocate memory to represent the list
+	siEx.lpAttributeList = (PPROC_THREAD_ATTRIBUTE_LIST)HeapAlloc(GetProcessHeap(), 0, bytesRequired);
+	if (!siEx.lpAttributeList)
+		PV_THROW_HRESULT(E_OUTOFMEMORY);
+	PV_FINALLY([&]() { HeapFree(GetProcessHeap(), 0, siEx.lpAttributeList); });
+
+	// Initialize the list memory location
+	PV_THROW_LAST_ERROR_IF(!InitializeProcThreadAttributeList(siEx.lpAttributeList, 1, 0, &bytesRequired));
+	PV_FINALLY([&]() { DeleteProcThreadAttributeList(siEx.lpAttributeList); });
+
+	// Set the pseudoconsole information into the list
+	PV_THROW_LAST_ERROR_IF(!UpdateProcThreadAttribute(siEx.lpAttributeList, 0, PROC_THREAD_ATTRIBUTE_PSEUDOCONSOLE, hPC, sizeof(hPC), NULL, NULL));
+
+	// Create process
+	PROCESS_INFORMATION pi;
+	memset(&pi, 0, sizeof(pi));
+	PV_THROW_LAST_ERROR_IF(!CreateProcessW(exeW.c_str(), NULL, NULL, NULL, TRUE, EXTENDED_STARTUPINFO_PRESENT, NULL, NULL, &siEx.StartupInfo, &pi));
+	PV_FINALLY([&]() { CloseHandle(pi.hProcess); CloseHandle(pi.hThread); });
+
+	// Close the child side of the pipes
+	CloseHandle(inputRead);
+	CloseHandle(outputWrite);
+	childSideClosed = true;
+
+	// Wait for process to exit
+	WaitForSingleObject(pi.hProcess, INFINITE);
+	ClosePseudoConsole(hPC);
+	pseudoconsoleClosed = true;
+
+	// Read output
+	std::string outputStr;
+	char buf[4096];
+	DWORD bytesRead;
+	for (;;)
+	{
+		if (!ReadFile(outputRead, buf, sizeof(buf), &bytesRead, NULL))
+			break;
+		if (bytesRead == 0)
+			break;
+		outputStr.append(buf, bytesRead);
+	}
+
+	// Print output and stderr
+	core.printF("output: {}\n", outputStr);
+
+	// Print exit code
+	DWORD exitCode;
+	if (GetExitCodeProcess(pi.hProcess, &exitCode))
+		core.printF("exit code: {}\n", exitCode);
+	else
+		core.printF("exit code: unknown\n");
+}
+
 int main(int argc, char **argv)
 {
 	pv::Core core(argc, argv);
@@ -125,7 +245,7 @@ int main(int argc, char **argv)
 	DWORD res = GetModuleFileNameW(NULL, exePath, MAX_PATH);
 	PV_THROW_LAST_ERROR_IF(!res || res == MAX_PATH);
 	// Find the last backslash - the start of the filename
-	wchar_t* lastBackslash = wcsrchr(exePath, L'\\');
+	wchar_t *lastBackslash = wcsrchr(exePath, L'\\');
 	if (lastBackslash)
 		*lastBackslash = L'\0'; // Truncate the path to remove the filename
 	else
@@ -142,6 +262,27 @@ int main(int argc, char **argv)
 	core.printLf("Invalid UTF-8 characters (like NUL for badly interpreted UTF-16) will simply be skipped by the console");
 	captureStdout(core, "test_stdout_932.exe"); // This will give Shift-JIS output on stdout because we push it binary, but console is also set to 932 so ConPTY should convert it correctly to UTF-8
 	captureStdout(core, "test_stdout_utf16.exe"); // Here we push UTF-16 into a _O_U16TEXT stream, so this should be UTF-16 on stdout, and UTF-8 on ConPTY
+	core.printLf("");
+	core.printLf("");
+
+	if (!loadConPTY())
+	{
+		core.printLf("No ConPTY support");
+		return EXIT_SUCCESS;
+		;
+	}
+	core.printLf("ConPTY loaded");
+	core.printLf("");
+	core.printLf("The following four should all work:");
+	captureConPTY(core, "test_utf8_on.exe");
+	captureConPTY(core, "test_utf8_off.exe");
+	captureConPTY(core, "test_stdout_932.exe");
+	captureConPTY(core, "test_stdout_utf16.exe");
+	core.printLf("");
+	core.printLf("");
+
+	return EXIT_SUCCESS;
+	;
 }
 
 /* end of file */

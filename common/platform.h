@@ -171,7 +171,7 @@ using namespace std::string_view_literals;
 		    &sv[0], (int)sv.size(),                               \
 		    wstr, (int)sv.size() * 2);                            \
 		if (!wlen) break;                                         \
-		wstr[wlen] = 0;                                           \
+		wstr[wlen] = L'\0';                                       \
 		OutputDebugStringW(wstr);                                 \
 	} while (false)
 #define PV_DEBUG_OUTPUT_LF(str)                                   \
@@ -185,8 +185,8 @@ using namespace std::string_view_literals;
 		    &sv[0], (int)sv.size(),                               \
 		    wstr, (int)sv.size() * 2);                            \
 		if (!wlen) break;                                         \
-		wstr[wlen] = '\n';                                        \
-		wstr[wlen + 1] = 0;                                       \
+		wstr[wlen] = L'\n';                                       \
+		wstr[wlen + 1] =  L'\0';                                  \
 		OutputDebugStringW(wstr);                                 \
 	} while (false)
 #else
