@@ -34,7 +34,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 int main(int argc, char **argv)
 {
 	UINT origACP = GetACP();
-	std::wstring origLocale = _wsetlocale(LC_ALL, null);
+	const wchar_t *origLocaleP = _wsetlocale(LC_ALL, null);
+	std::wstring origLocale = origLocaleP ? origLocaleP : L"<null>";
 	UINT consoleOutputCP = GetConsoleOutputCP();
 	UINT consoleCP = GetConsoleCP();
 
@@ -57,7 +58,8 @@ int main(int argc, char **argv)
 	pv::Core core(argc, argv);
 
 	UINT newACP = GetACP();
-	std::wstring newLocale = _wsetlocale(LC_ALL, null);
+	const wchar_t *newLocaleP = _wsetlocale(LC_ALL, null);
+	std::wstring newLocale = newLocaleP ? newLocaleP : L"<null>";
 	UINT newConsoleOutputCP = GetConsoleOutputCP();
 	UINT newConsoleCP = GetConsoleCP();
 
