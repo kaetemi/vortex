@@ -37,6 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // [1] https://github.com/microsoft/terminal/blob/f5b45c25c9dfe27e03fbea1c7d82a6dc2a009343/src/types/CodepointWidthDetector.cpp
 // [2] https://github.com/microsoft/terminal/blob/171a21ad48eca9f57a3ae5692fe9a5c64e9ad276/src/inc/til/unicode.h
+// [3] https://unicodelookup.com/#🏳️‍🌈
 
 // Set output mode to handle virtual terminal sequences
 static bool enableVTMode()
@@ -111,7 +112,8 @@ int main(int argc, char **argv)
 	core.print("Second test done\n");
 	core.print("\n");
 
-	core.print("And another line 🏳️‍🌈\n"); // This flag takes multiple codepoints, but only one glyph, great // [2]
+	core.print("And another line 🏳️‍🌈\n"); // This flag takes multiple codepoints, but only one glyph, great // [2] [3]
+	// TODO: What if we are terrible people and push this glyph as separate print calls?
 
 	// Save cursor position
 	core.print("\x1b[s");
