@@ -78,7 +78,27 @@ public:
 	void print(const char *str);
 	void printLf(const char *str);
 
+	template <typename... TArgs>
+	void printF(std::string_view format, TArgs... args)
+	{
+		std::format_to(std::back_insert_iterator(pv::PrintContainer(*this)), format, args...);
+	}
+
+	template <typename... TArgs>
+	void printF(const char *format, TArgs... args)
+	{
+		std::format_to(std::back_insert_iterator(pv::PrintContainer(*this)), format, args...);
+	}
+
+	template <typename... TArgs>
+	void printF(const std::string &format, TArgs... args)
+	{
+		std::format_to(std::back_insert_iterator(pv::PrintContainer(*this)), format, args...);
+	}
+
 private:
+	friend struct PrintContainer;
+
 	int m_ArgC;
 	char **m_ArgV;
 	std::mutex m_PrintMutex;
@@ -90,7 +110,61 @@ private:
 #endif
 };
 
+struct PrintContainer
+{
+public:
+	typedef char value_type;
+
+private:
+	char m_Buffer[PV_OUTPUT_DEBUG_BUFFER];
+	int m_Length = 0;
+	Core &m_Core;
+	std::unique_lock<std::mutex> m_Lock;
+
+	void flush()
+	{
+		int len = m_Length;
+		if (m_Buffer[len - 1] & 0x80)
+		{
+			// Last character may be incomplete
+			--len;
+			while (!(m_Buffer[len] & 0x40))
+				--len;
+		}
+		m_Core.print(std::string_view(m_Buffer, len));
+		int remain = m_Length - len;
+		for (int i = 0; i < remain; ++i)
+			m_Buffer[i] = m_Buffer[len + i];
+		m_Length = remain;
+	}
+
+public:
+	PV_FORCE_INLINE void push_back(char c)
+	{
+		m_Buffer[m_Length] = c;
+		++m_Length;
+		if (m_Length >= sizeof(m_Buffer))
+			flush();
+	}
+
+#pragma warning(push)
+#pragma warning(disable : 26495) // Buffer not initialized on purpose
+	PV_FORCE_INLINE PrintContainer(Core &core)
+	    : m_Core(core)
+	    , m_Lock(core.m_PrintMutex)
+	{
+	}
+#pragma warning(pop)
+	PV_FORCE_INLINE ~PrintContainer()
+	{
+		if (m_Length)
+			m_Core.print(std::string_view(m_Buffer, m_Length));
+	}
+};
+
 } /* namespace pv */
+
+#define PV_PRINT_FORMAT(core, format, ...) ([&]() -> void { std::format_to(std::back_insert_iterator(pv::PrintContainer(core)), format, __VA_ARGS__); })()
 
 #endif /* #ifndef PV_CORE_H */
 

@@ -247,7 +247,7 @@ private:
 		{
 			// Last character may be incomplete
 			--len;
-			while (m_Buffer[len] & 0x40)
+			while (!(m_Buffer[len] & 0x40))
 				--len;
 		}
 		PV_DEBUG_OUTPUT(std::string_view(m_Buffer, len));
