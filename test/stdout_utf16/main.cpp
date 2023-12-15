@@ -50,6 +50,8 @@ int main(int argc, char **argv)
 	// Because we're in text mode, the C functions will convert to the console's UTF-8 codepage for display
 	// But the actual stdout will still be UTF-16 when captured by another application because we're set to _O_U16TEXT
 	// While with _O_U8TEXT the stdout output would be converted to UTF-8 as well
+	
+	// The _O_U16TEXT and _O_U8TEXT modes only accept wide Unicode inputs, the regular std::cout and C printf will crash!
 }
 
 /* end of file */
