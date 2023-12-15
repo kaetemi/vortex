@@ -97,6 +97,7 @@ public:
 	}
 
 private:
+	void printImpl(std::string_view str);
 	friend struct PrintContainer;
 
 	int m_ArgC;
@@ -131,7 +132,7 @@ private:
 			while (!(m_Buffer[len] & 0x40))
 				--len;
 		}
-		m_Core.print(std::string_view(m_Buffer, len));
+		m_Core.printImpl(std::string_view(m_Buffer, len));
 		int remain = m_Length - len;
 		for (int i = 0; i < remain; ++i)
 			m_Buffer[i] = m_Buffer[len + i];
@@ -158,7 +159,7 @@ public:
 	PV_FORCE_INLINE ~PrintContainer()
 	{
 		if (m_Length)
-			m_Core.print(std::string_view(m_Buffer, m_Length));
+			m_Core.printImpl(std::string_view(m_Buffer, m_Length));
 	}
 };
 

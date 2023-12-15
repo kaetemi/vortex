@@ -163,10 +163,8 @@ Core::~Core()
 #endif
 }
 
-void Core::print(std::string_view str)
+void Core::printImpl(std::string_view str)
 {
-	if (!str.length())
-		return;
 	std::unique_lock<std::mutex> lock(m_PrintMutex);
 	if (isUtf8Clean())
 	{
@@ -189,6 +187,13 @@ void Core::print(std::string_view str)
 		std::wcout << std::wstring_view(tmp, (size_t)tmpLen);
 #endif
 	}
+}
+
+void Core::print(std::string_view str)
+{
+	if (!str.length())
+		return;
+	printImpl(str);
 }
 
 void Core::printLf(std::string_view str)
