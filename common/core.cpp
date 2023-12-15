@@ -95,7 +95,7 @@ Core::Core(int argc, char *argv[])
 		if (!isUtf8Clean) // Attempt to revert changes on failure
 			_wsetlocale(LC_ALL, bkp.c_str());
 	}
-	if (!isUtf8Clean)
+	if (!isUtf8Clean) // This ensures we can output Unicode characters to the console when UTF-8 is not available
 		(void)setmode(_fileno(stdout), _O_U16TEXT);
 	m_Utf8Clean = isUtf8Clean;
 
