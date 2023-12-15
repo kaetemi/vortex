@@ -35,6 +35,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Win32
 #ifdef _WIN32
 #include <shellapi.h>
+#include <fcntl.h>
+#include <io.h>
 #endif
 
 // Project
@@ -83,12 +85,18 @@ Core::Core(int argc, char *argv[])
 		}
 		if (isUtf8Locale(locale) || isUtf8Locale(_wsetlocale(LC_ALL, null)))
 		{
-			SetConsoleOutputCP(CP_UTF8);
-			isUtf8Clean = (GetConsoleOutputCP() == CP_UTF8);
+			int prevStdOutMode = _setmode(_fileno(stdout), _O_U8TEXT);
+			if (prevStdOutMode != -1)
+			{
+				SetConsoleOutputCP(CP_UTF8);
+				isUtf8Clean = (GetConsoleOutputCP() == CP_UTF8);
+			}
 		}
 		if (!isUtf8Clean) // Attempt to revert changes on failure
 			_wsetlocale(LC_ALL, bkp);
 	}
+	if (!isUtf8Clean)
+		(void)setmode(_fileno(stdout), _O_U16TEXT);
 	m_Utf8Clean = isUtf8Clean;
 
 	// https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw
