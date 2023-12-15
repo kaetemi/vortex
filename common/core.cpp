@@ -76,7 +76,8 @@ Core::Core(int argc, char *argv[])
 	if (acp == CP_UTF8)
 	{
 		// Update C/C++ locale
-		std::wstring bkp = _wsetlocale(LC_ALL, null);
+		const wchar_t *pbkp = _wsetlocale(LC_ALL, null);
+		std::wstring bkp = pbkp ? pbkp : L"";
 		const wchar_t *locale = _wsetlocale(LC_ALL, L"C.UTF-8");
 		if (!isUtf8Locale(locale))
 		{
@@ -92,7 +93,7 @@ Core::Core(int argc, char *argv[])
 				isUtf8Clean = (GetConsoleOutputCP() == CP_UTF8);
 			}
 		}
-		if (!isUtf8Clean) // Attempt to revert changes on failure
+		if (!isUtf8Clean && pbkp) // Attempt to revert changes on failure
 			_wsetlocale(LC_ALL, bkp.c_str());
 	}
 	if (!isUtf8Clean) // This ensures we can output Unicode characters to the console when UTF-8 is not available
