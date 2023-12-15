@@ -31,6 +31,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "core.h"
 #include "string_ex.h"
 
+// https://learn.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences
+
 // Tools will have dumb shit like rewriting progress bars, so we'll need to parse the terminal sequences and track which lines are in use by which process
 // Since we access from thread, we'll need to provide an ongoing accessor lock to print throug printImpl rather than going through print directly
 // Those terminal sequences will need to be translated to alternate the output lines properly (maybe prefix them too)
@@ -40,6 +42,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // [3] https://unicodelookup.com/#🏳️‍🌈
 
 // Set output mode to handle virtual terminal sequences
+// Not really needed, this just causes the OS to generate input sequences in response to specific output sequences
+// Similarly, ENABLE_VIRTUAL_TERMINAL_INPUT causes the Terminal to generate input sequences for things like keyboard arrows
 static bool enableVTMode()
 {
 	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -112,9 +116,12 @@ int main(int argc, char **argv)
 	core.print("Second test done\n");
 	core.print("\n");
 
-	core.print("And another line 🏳️‍🌈\n"); // This flag takes multiple codepoints, but only one glyph, great // [2] [3]
+	core.print("And another line 🏳️‍🌈 123 (\n"); // This flag takes multiple codepoints, but only one glyph, great // [2] [3]
 	// What if we are terrible people and push this glyph as separate print calls?
 	// From our POV we just pretend the character after a zero width joiner is zero width itself, the effect is the same
+
+	// Nevermind, Terminal just calculates width per codepoint and slaps the emoji in the middle.
+	// Old command line prints the codepoints separately but the codepoints widths are mismatched
 
 	// Save cursor position
 	core.print("\x1b[s");
@@ -123,13 +130,14 @@ int main(int argc, char **argv)
 	core.print("\x1b[1A");
 
 	// Go to end of line
-	core.print("\x1b[20C"); // core.print("\x1b[17C");
+	core.print("\x1b[28C"); // core.print("\x1b[20C"); // core.print("\x1b[17C");
 
-	// Write (appended)
-	core.print("(appended)");
+	// Write "appended)"
+	core.print("appended)");
 
 	// Restore cursor
 	core.print("\x1b[u");
+	core.print("This works in Terminal. In Command Line the first bracket will be missing.\n");
 
 	core.print("\n");
 
