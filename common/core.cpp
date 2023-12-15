@@ -95,8 +95,10 @@ Core::Core(int argc, char *argv[])
 		if (!isUtf8Clean) // Attempt to revert changes on failure
 			_wsetlocale(LC_ALL, bkp);
 	}
+#if 0 // Assuming nobody else does this, so stdout will end up being local codepage
 	if (!isUtf8Clean)
 		(void)setmode(_fileno(stdout), _O_U16TEXT);
+#endif
 	m_Utf8Clean = isUtf8Clean;
 
 	// https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw
