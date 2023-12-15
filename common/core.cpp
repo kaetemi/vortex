@@ -85,10 +85,8 @@ Core::Core(int argc, char *argv[])
 		}
 		if (isUtf8Locale(locale) || isUtf8Locale(_wsetlocale(LC_ALL, null)))
 		{
-#if 0 // This doesn't seem right, it expects UTF-16 input when doing this!
-			int prevStdOutMode = _setmode(_fileno(stdout), _O_U8TEXT);
+			int prevStdOutMode = _setmode(_fileno(stdout), _O_TEXT);
 			if (prevStdOutMode != -1)
-#endif
 			{
 				SetConsoleOutputCP(CP_UTF8);
 				isUtf8Clean = (GetConsoleOutputCP() == CP_UTF8);
@@ -97,10 +95,8 @@ Core::Core(int argc, char *argv[])
 		if (!isUtf8Clean) // Attempt to revert changes on failure
 			_wsetlocale(LC_ALL, bkp.c_str());
 	}
-#if 0 // Assuming nobody else does this, so stdout will end up being local codepage
 	if (!isUtf8Clean)
 		(void)setmode(_fileno(stdout), _O_U16TEXT);
-#endif
 	m_Utf8Clean = isUtf8Clean;
 
 	// https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw

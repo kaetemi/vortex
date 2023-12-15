@@ -91,6 +91,7 @@ int main(int argc, char **argv)
 	newConsoleCP: 65001
 
 	Not UTF-8 clean
+	日本語
 	*/
 
 #endif
