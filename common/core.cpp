@@ -264,6 +264,21 @@ void Core::printLf(std::string_view str)
 	}
 }
 
+void Core::printLf()
+{
+	std::unique_lock<std::mutex> lock(m_PrintMutex);
+	if (isUtf8Clean())
+	{
+		std::cout << "\n";
+	}
+	else
+	{
+#ifdef _WIN32
+		std::wcout << L"\n";
+#endif
+	}
+}
+
 void Core::print(const char *str)
 {
 	if (isUtf8Clean())

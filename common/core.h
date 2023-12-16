@@ -81,6 +81,7 @@ public:
 
 	void print(const char *str);
 	void printLf(const char *str);
+	void printLf();
 
 	template <class... TArgs>
 	void printF(const std::format_string<TArgs...> format, TArgs&&... args)

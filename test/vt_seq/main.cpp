@@ -147,6 +147,26 @@ int main(int argc, char **argv)
 	core.print("Third test done\n");
 	core.print("\n");
 
+	core.print("This is another very very long line. It is very long indeed. So long it should pop right off the side of the console onto the next line. What happens with our cursor?\n");
+
+	// Save cursor position
+	core.print("\x1b[s");
+
+	// Up one line
+	core.print("\x1b[1F"); // Also does not go to the start, F does the same as the other one, but returns to start of line
+
+	// Replace with "That"
+	core.print("That");
+	// core.print("\x1b[100@"); // This inserts spaces and removes text that overflows
+
+	// Restore cursor
+	core.print("\x1b[u");
+
+	core.print("\n");
+
+	core.print("Fourth test done\n");
+	core.print("\n");
+
 	return EXIT_SUCCESS;
 }
 
