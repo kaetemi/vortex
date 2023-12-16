@@ -76,6 +76,34 @@ int main(int argc, char **argv)
 	// -> It becomes whitespace in the wrapped line!
 	// Otherwise the virtual line length is shortened (if the line is shorter than the buffer). (TODO: Verify < or <=.)
 
+	std::this_thread::sleep_for(std::chrono::milliseconds(700));
+
+	// Get console width
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+	int consoleWidth = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+	core.printF("Console width: {}\n\n"sv, consoleWidth);
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(700));
+
+	// Make a string of the console width
+	std::string line(consoleWidth, 'a');
+
+	core.print(line);
+	core.printLf(); // This bugs and attaches the next line to the current one!!! (so if consolewidth == line length, the newline should be ignored)
+	core.print("Is this right below or not?");
+	core.printLf();
+	core.printLf();
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(700));
+
+	core.print(line);
+	core.print("x");
+	core.printLf(); // This counts as a character in the line length for some reason!!!
+	core.print("How about now?");
+	core.printLf();
+	core.printLf();
+
 	return EXIT_SUCCESS;
 }
 
