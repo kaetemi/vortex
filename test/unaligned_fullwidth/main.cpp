@@ -45,7 +45,36 @@ int main(int argc, char **argv)
 	// -> All we need to do is count how many characters each virtual row has.
 
 	core.printF("a{}{}{}\n\n"sv, hiragana, katakana, kanji);
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(700));
+
 	core.printF("bb{}{}{}\n\n"sv, hiragana, katakana, kanji);
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(700));
+
+	// Save cursor
+	core.printF("\x1b[s"sv);
+
+	// Up cursor two times
+	core.printF("\x1b[2A"sv);
+
+	// Remove four characters
+	core.printF("\x1b[4P"sv);
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(700));
+
+	// Up cursor one time
+	core.printF("\x1b[1A"sv);
+
+	// Remove four characters
+	core.printF("\x1b[4P"sv);
+
+	// Restore
+	core.printF("\x1b[u"sv);
+
+	// When removing characters from the front, what happens is nothing if the line is longer than the buffer.
+	// -> It becomes whitespace in the wrapped line!
+	// Otherwise the virtual line length is shortened (if the line is shorter than the buffer). (TODO: Verify < or <=.)
 
 	return EXIT_SUCCESS;
 }
